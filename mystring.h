@@ -21,20 +21,19 @@ class MyString {
     MyStringObj();
     MyStringObj(const char*);
     MyStringObj(const MyStringObj&);
+    constexpr MyStringObj(MyStringObj&&) = default;
     ~MyStringObj() noexcept;
-    MyStringObj& operator=(const char*);
     MyStringObj& operator=(const MyStringObj&);
     MyStringObj operator+(const char*) const;
     MyStringObj& operator+=(const char*);
     MyStringObj& operator+=(char);
     MyStringObj operator+(const MyStringObj&) const;
     MyStringObj& operator+=(const MyStringObj&);
-    constexpr size_t size() const { return stored; };
+    constexpr size_t size() const noexcept { return stored; };
     char* operator[](size_t);
-    const char* operator[](size_t) const;
     std::ostream& write(std::ostream&) const;
     std::istream& read(std::istream&);
-    const char* getConstChar() const { return data; }
+    constexpr const char* getConstChar() const noexcept { return data; }
   };
 
   struct cStringLess {
@@ -52,29 +51,35 @@ class MyString {
     size_t pointed;
 
    public:
-    constMyStringChar(const MyString* ptr, size_t pointed)
+    constexpr constMyStringChar(const MyString* ptr, size_t pointed) noexcept
         : owner{ptr}, pointed{pointed} {}
-    constMyStringChar(const constMyStringChar& o)
+    constexpr constMyStringChar(const constMyStringChar& o) noexcept
         : owner{o.owner}, pointed{o.pointed} {}
-    constMyStringChar(const MyStringChar& o)
+    constexpr constMyStringChar(const MyStringChar& o) noexcept
         : owner{o.getOwner()}, pointed{o.getIndex()} {}
-    operator char() const { return owner->getValue(pointed); }
-    const char* operator&() const { return (*(owner->str))[pointed]; };
-    const MyString* getOwner() const { return owner; }
-    size_t getIndex() const { return pointed; }
+    constexpr constMyStringChar(constMyStringChar&&) noexcept = default;
+    constexpr operator char() const noexcept {
+      return owner->getValue(pointed);
+    }
+    constexpr const char* operator&() const noexcept {
+      return (*(owner->str))[pointed];
+    };
+    constexpr const MyString* getOwner() const noexcept { return owner; }
+    constexpr size_t getIndex() const noexcept { return pointed; }
   };
   class MyStringChar {
     MyString* owner;
     size_t pointed;
 
    public:
-    MyStringChar(MyString* ptr, size_t pointed)
+    constexpr MyStringChar(MyString* ptr, size_t pointed) noexcept
         : owner{ptr}, pointed{pointed} {}
-    MyStringChar(const MyStringChar& o) : owner{o.owner}, pointed{o.pointed} {}
-    explicit MyStringChar(const constMyStringChar& o) : pointed{o.getIndex()} {
-      owner = const_cast<MyString*>(o.getOwner());
+    constexpr MyStringChar(const MyStringChar& o) noexcept
+        : owner{o.owner}, pointed{o.pointed} {}
+    constexpr MyStringChar(MyStringChar&&) noexcept = default;
+    constexpr operator char() const noexcept {
+      return owner->getValue(pointed);
     }
-    operator char() const { return owner->getValue(pointed); }
     MyStringChar& operator=(char);
     MyStringChar& operator=(const MyStringChar&);
     MyStringChar& operator=(const constMyStringChar& o) {
@@ -82,19 +87,24 @@ class MyString {
       pointed = o.getIndex();
       return *this;
     }
-    const char* operator&() const { return (*(owner->str))[pointed]; };
-    MyString* getOwner() const { return owner; }
-    size_t getIndex() const { return pointed; }
+    constexpr const char* operator&() const noexcept {
+      return (*(owner->str))[pointed];
+    };
+    constexpr MyString* getOwner() const noexcept { return owner; }
+    constexpr size_t getIndex() const noexcept { return pointed; }
   };
 
  private:
   MyStringObj* str;
-  inline char getValue(size_t index) const { return *(*str)[index]; }
+  constexpr inline char getValue(size_t index) const noexcept {
+    return *(*str)[index];
+  }
 
  public:
   MyString();
   MyString(const char*);
   MyString(const MyString&);
+  constexpr MyString(MyString&&) noexcept = default;
   ~MyString() noexcept;
   MyString& operator=(const char*);
   MyString& operator=(const MyString&);
@@ -108,8 +118,8 @@ class MyString {
   MyString& operator+=(const char*);
   MyString operator+(const MyString&);
   MyString& operator+=(const MyString&);
-  MyStringChar operator[](size_t);
-  const constMyStringChar operator[](size_t) const;
+  MyStringChar operator[](size_t) noexcept;
+  const constMyStringChar operator[](size_t) const noexcept;
   constexpr size_t size() const { return str->size(); }
   void write(std::ostream&) const;
   void read(std::istream&);

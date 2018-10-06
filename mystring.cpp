@@ -21,29 +21,7 @@ inline MyString::MyStringObj::MyStringObj(const MyString::MyStringObj& o)
   data[stored] = 0;
 }
 inline MyString::MyStringObj::~MyStringObj() noexcept { delete[] data; }
-MyString::MyStringObj& MyString::MyStringObj::operator=(const char* str) {
-  size_t newsize = strlen(str);
-  if (newsize + 1 < maxsize) {
-    if (newsize * 4 + 1 < maxsize) {
-      char* tmp = new char[maxsize / 2];
-      maxsize /= 2;
-      delete[] data;
-      data = tmp;
-    }
-    strcpy(data, str);
-    stored = newsize;
-  } else {
-    size_t newmaxsize = newsize * 1.5 + 1;
-    char* tmp = new char[newmaxsize];
-    delete[] data;
-    data = tmp;
-    maxsize = newmaxsize;
-    stored = newsize;
-    strcpy(data, str);
-  }
-  data[stored] = 0;
-  return *this;
-}
+
 MyString::MyStringObj& MyString::MyStringObj::operator=(
     const MyString::MyStringObj& o) {
   if (this != &o) {
@@ -130,12 +108,6 @@ char* MyString::MyStringObj::operator[](size_t index) {
   return &data[index];
 }
 
-const char* MyString::MyStringObj::operator[](size_t index) const {
-  if (index >= stored)
-    throw std::out_of_range("Requested char* at index is out of range.");
-  return &data[index];
-}
-
 std::ostream& MyString::MyStringObj::write(std::ostream& os) const {
   os << data;
   return os;
@@ -178,6 +150,7 @@ MyString::MyString(const char* str) {
 }
 
 MyString::MyString(const MyString& o) : str{o.str} { ++(str->referred); }
+
 MyString::MyString(const MyStringObj& o) {
   auto iter = StringCollection.find(o.getConstChar());
   if (iter != StringCollection.end()) {
@@ -271,10 +244,11 @@ MyString& MyString::operator+=(const MyString& o) {
   return *this;
 }
 
-MyString::MyStringChar MyString::operator[](size_t index) {
+MyString::MyStringChar MyString::operator[](size_t index) noexcept {
   return MyString::MyStringChar(this, index);
 }
-const MyString::constMyStringChar MyString::operator[](size_t index) const {
+const MyString::constMyStringChar MyString::operator[](size_t index) const
+    noexcept {
   return MyString::constMyStringChar(this, index);
 }
 
