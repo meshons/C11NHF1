@@ -127,7 +127,7 @@ std::istream& MyString::MyStringObj::read(std::istream& is) {
 
 MyString::MyString() {
   auto iter = StringCollection.find("");
-  if (iter == StringCollection.end()) {
+  if (iter != StringCollection.end()) {
     str = iter->second;
     ++(iter->second->referred);
   } else {
@@ -138,8 +138,8 @@ MyString::MyString() {
 }
 
 MyString::MyString(const char* str) {
-  auto iter = StringCollection.find("");
-  if (iter == StringCollection.end()) {
+  auto iter = StringCollection.find(str);
+  if (iter != StringCollection.end()) {
     this->str = iter->second;
     ++(iter->second->referred);
   } else {
@@ -150,12 +150,23 @@ MyString::MyString(const char* str) {
 }
 
 MyString::MyString(const MyString& o) : str{o.str} { ++(str->referred); }
+MyString::MyString(const MyStringObj& o) {
+  auto iter = StringCollection.find(o.getConstChar());
+  if (iter != StringCollection.end()) {
+    str = iter->second;
+    ++(iter->second->referred);
+  } else {
+    str = new MyStringObj(o);
+    StringCollection.insert(std::map<const char*, MyStringObj*>::value_type(
+        str->getConstChar(), str));
+  }
+}
 
 MyString& MyString::operator=(const char* str) {
   MyStringObj* tmp;
 
   auto iter = StringCollection.find(str);
-  if (iter == StringCollection.end()) {
+  if (iter != StringCollection.end()) {
     tmp = iter->second;
     ++(iter->second->referred);
   } else {
@@ -174,12 +185,41 @@ MyString& MyString::operator=(const char* str) {
 }
 
 MyString& MyString::operator=(const MyString& o) {
-  if (this->str->referred == 1) {
-    StringCollection.erase(StringCollection.find(this->str->getConstChar()));
-  } else
-    --(this->str->referred);
+  if (this != &o) {
+    if (this->str->referred == 1) {
+      StringCollection.erase(StringCollection.find(this->str->getConstChar()));
+    } else
+      --(this->str->referred);
 
-  this->str = o.str;
-  ++(this->str->referred);
+    this->str = o.str;
+    ++(this->str->referred);
+  }
   return *this;
+}
+
+MyString& MyString::operator=(const MyStringObj& o) {
+  if (strcmp(str->getConstChar(), o.getConstChar()) != 0) {
+    auto iter = StringCollection.find(o.getConstChar());
+    if (iter != StringCollection.end()) {
+      str = iter->second;
+      ++(iter->second->referred);
+    } else {
+      str = new MyStringObj(o);
+      StringCollection.insert(std::map<const char*, MyStringObj*>::value_type(
+          str->getConstChar(), str));
+    }
+  }
+  return *this;
+}
+
+MyString MyString::operator+(const char* str) {
+  return MyString(*(this->str) + str);
+}
+MyString& MyString::operator+=(const char* str) {
+  // todo
+  return MyString(*(this->str) + str);
+}
+std::ostream& operator<<(std::ostream& os, const MyString& str) {
+  str.str->write(os);
+  return os;
 }

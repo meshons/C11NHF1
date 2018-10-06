@@ -69,6 +69,12 @@ class MyString {
   MyString(const MyString&);
   MyString& operator=(const char*);
   MyString& operator=(const MyString&);
+
+ private:
+  MyString(const MyStringObj&);
+  MyString& operator=(const MyStringObj&);
+
+ public:
   MyString operator+(const char*);
   MyString& operator+=(const char*);
   MyString operator+(const MyString&);
@@ -76,6 +82,8 @@ class MyString {
   MyStringChar operator[](size_t);
   const MyStringChar operator[](size_t) const;
   size_t size() const { return str->size(); }
+  friend std::ostream& operator<<(std::ostream&, const MyString&);
+  friend std::istream& operator>>(std::istream&, MyString&);  // todo
 };
 
 std::ostream& operator<<(std::ostream&, const MyString&);

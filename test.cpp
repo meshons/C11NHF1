@@ -1,4 +1,8 @@
 #include <iostream>
 #include "mystring.h"
 
-int main() { return 0; }
+int main() {
+  MyString t1 = "Teszt";
+  std::cout << t1 << std::endl;
+  return 0;
+}
