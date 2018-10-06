@@ -187,6 +187,12 @@ MyString::MyString(const MyStringObj& o) {
         str->getConstChar(), str));
   }
 }
+MyString::~MyString() {
+  if (--(str->referred) == 0) {
+    StringCollection.erase(StringCollection.find(this->str->getConstChar()));
+    delete this->str;
+  }
+}
 
 MyString& MyString::operator=(const char* str) {
   if (strcmp(str, this->str->getConstChar()) != 0) {
@@ -298,4 +304,9 @@ MyString::MyStringChar& MyString::MyStringChar::operator=(
     const MyString::MyStringChar& o) {
   *this = char(o);
   return *this;
+}
+void MyString::listCollection(std::ostream& os) {
+  std::cout << "&&& collection's items:" << std::endl;
+  for (const auto iter : StringCollection) os << iter.first << std::endl;
+  std::cout << "&&&" << std::endl;
 }

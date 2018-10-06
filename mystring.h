@@ -21,7 +21,7 @@ class MyString {
     MyStringObj();
     MyStringObj(const char*);
     MyStringObj(const MyStringObj&);
-    ~MyStringObj();
+    ~MyStringObj() noexcept;
     MyStringObj& operator=(const char*);
     MyStringObj& operator=(const MyStringObj&);
     MyStringObj operator+(const char*) const;
@@ -95,6 +95,7 @@ class MyString {
   MyString();
   MyString(const char*);
   MyString(const MyString&);
+  ~MyString() noexcept;
   MyString& operator=(const char*);
   MyString& operator=(const MyString&);
 
@@ -112,6 +113,8 @@ class MyString {
   size_t size() const { return str->size(); }
   void write(std::ostream&) const;
   void read(std::istream&);
+
+  static void listCollection(std::ostream&);
 };
 
 std::ostream& operator<<(std::ostream&, const MyString&);
