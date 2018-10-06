@@ -22,13 +22,23 @@ inline MyString::MyStringObj::MyStringObj(const MyString::MyStringObj& o)
 }
 inline MyString::MyStringObj::~MyStringObj() { delete[] data; }
 MyString::MyStringObj& MyString::MyStringObj::operator=(const char* str) {
-  stored = strlen(str);
-  if (stored + 1 < maxsize)
+  size_t newsize = strlen(str);
+  if (newsize + 1 < maxsize) {
+    if (newsize * 4 + 1 < maxsize) {
+      char* tmp = new char[maxsize / 2];
+      maxsize /= 2;
+      delete[] data;
+      data = tmp;
+    }
     strcpy(data, str);
-  else {
-    maxsize = stored * 1.5 + 1;
+    stored = newsize;
+  } else {
+    size_t newmaxsize = newsize * 1.5 + 1;
+    char* tmp = new char[newmaxsize];
     delete[] data;
-    data = new char[maxsize];
+    data = tmp;
+    maxsize = newmaxsize;
+    stored = newsize;
     strcpy(data, str);
   }
   data[stored] = 0;
@@ -37,13 +47,23 @@ MyString::MyStringObj& MyString::MyStringObj::operator=(const char* str) {
 MyString::MyStringObj& MyString::MyStringObj::operator=(
     const MyString::MyStringObj& o) {
   if (this != &o) {
-    stored = o.stored;
-    if (stored + 1 < maxsize)
+    size_t newsize = o.stored;
+    if (newsize + 1 < maxsize) {
+      if (newsize * 4 + 1 < maxsize) {
+        char* tmp = new char[maxsize / 2];
+        maxsize /= 2;
+        delete[] data;
+        data = tmp;
+      }
       strcpy(data, o.data);
-    else {
-      maxsize = stored * 1.5 + 1;
+      stored = newsize;
+    } else {
+      size_t newmaxsize = newsize * 1.5 + 1;
+      char* tmp = new char[newmaxsize];
       delete[] data;
-      data = new char[maxsize];
+      data = tmp;
+      maxsize = newmaxsize;
+      stored = newsize;
       strcpy(data, o.data);
     }
   }
@@ -105,13 +125,13 @@ MyString::MyStringObj MyString::MyStringObj::operator+(const char* str) const {
 }
 
 char* MyString::MyStringObj::operator[](size_t index) {
-  if (index > stored)
+  if (index >= stored)
     throw std::out_of_range("Requested char* at index is out of range.");
   return &data[index];
 }
 
 const char* MyString::MyStringObj::operator[](size_t index) const {
-  if (index > stored)
+  if (index >= stored)
     throw std::out_of_range("Requested char* at index is out of range.");
   return &data[index];
 }
@@ -252,8 +272,9 @@ const MyString::constMyStringChar MyString::operator[](size_t index) const {
 
 inline void MyString::write(std::ostream& os) const { str->write(os); }
 inline void MyString::read(std::istream& is) {
-  // todo
-  str->read(is);
+  MyStringObj tmp;
+  tmp.read(is);
+  *this = tmp;
 }
 
 std::ostream& operator<<(std::ostream& os, const MyString& str) {
@@ -263,4 +284,18 @@ std::ostream& operator<<(std::ostream& os, const MyString& str) {
 std::istream& operator<<(std::istream& is, MyString& str) {
   str.read(is);
   return is;
+}
+
+MyString::MyStringChar& MyString::MyStringChar::operator=(char c) {
+  if (c != char(*this)) {
+    MyStringObj tmp(*(owner->str));
+    *(tmp[pointed]) = c;
+    *(this->owner) = tmp;
+  }
+  return *this;
+}
+MyString::MyStringChar& MyString::MyStringChar::operator=(
+    const MyString::MyStringChar& o) {
+  *this = char(o);
+  return *this;
 }

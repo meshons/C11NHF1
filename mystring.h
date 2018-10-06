@@ -75,8 +75,8 @@ class MyString {
       owner = const_cast<MyString*>(o.getOwner());
     }
     operator char() const { return owner->getValue(pointed); }
-    MyStringChar& operator=(char);  // todo
-    MyStringChar& operator=(const MyStringChar& o) = default;
+    MyStringChar& operator=(char);
+    MyStringChar& operator=(const MyStringChar&);
     MyStringChar& operator=(const constMyStringChar& o) {
       owner = const_cast<MyString*>(o.getOwner());
       pointed = o.getIndex();
@@ -111,7 +111,7 @@ class MyString {
   const constMyStringChar operator[](size_t) const;
   size_t size() const { return str->size(); }
   void write(std::ostream&) const;
-  void read(std::istream&);  // todo
+  void read(std::istream&);
 };
 
 std::ostream& operator<<(std::ostream&, const MyString&);
