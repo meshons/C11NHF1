@@ -20,7 +20,7 @@ inline MyString::MyStringObj::MyStringObj(const MyString::MyStringObj& o)
   strcpy(data, o.data);
   data[stored] = 0;
 }
-inline MyString::MyStringObj::~MyStringObj() { delete[] data; }
+inline MyString::MyStringObj::~MyStringObj() noexcept { delete[] data; }
 MyString::MyStringObj& MyString::MyStringObj::operator=(const char* str) {
   size_t newsize = strlen(str);
   if (newsize + 1 < maxsize) {
@@ -143,6 +143,8 @@ std::ostream& MyString::MyStringObj::write(std::ostream& os) const {
 std::istream& MyString::MyStringObj::read(std::istream& is) {
   *this = MyStringObj();
   int x = is.get();
+  bool started = false;
+  while (isspace(x) && x != EOF) x = is.get();
   while (!isspace(x) && x != EOF) {
     *this += static_cast<char>(x);
     x = is.get();
@@ -187,7 +189,7 @@ MyString::MyString(const MyStringObj& o) {
         str->getConstChar(), str));
   }
 }
-MyString::~MyString() {
+MyString::~MyString() noexcept {
   if (--(str->referred) == 0) {
     StringCollection.erase(StringCollection.find(this->str->getConstChar()));
     delete this->str;
@@ -287,7 +289,7 @@ std::ostream& operator<<(std::ostream& os, const MyString& str) {
   str.write(os);
   return os;
 }
-std::istream& operator<<(std::istream& is, MyString& str) {
+std::istream& operator>>(std::istream& is, MyString& str) {
   str.read(is);
   return is;
 }
@@ -306,7 +308,7 @@ MyString::MyStringChar& MyString::MyStringChar::operator=(
   return *this;
 }
 void MyString::listCollection(std::ostream& os) {
-  std::cout << "&&& collection's items:" << std::endl;
+  std::cout << "$$$ collection's items:" << std::endl;
   for (const auto iter : StringCollection) os << iter.first << std::endl;
-  std::cout << "&&&" << std::endl;
+  std::cout << "~~~" << std::endl;
 }

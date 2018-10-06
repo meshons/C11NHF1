@@ -110,7 +110,7 @@ class MyString {
   MyString& operator+=(const MyString&);
   MyStringChar operator[](size_t);
   const constMyStringChar operator[](size_t) const;
-  size_t size() const { return str->size(); }
+  constexpr size_t size() const { return str->size(); }
   void write(std::ostream&) const;
   void read(std::istream&);
 
