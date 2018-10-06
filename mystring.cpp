@@ -104,9 +104,15 @@ MyString::MyStringObj MyString::MyStringObj::operator+(const char* str) const {
   return MyStringObj(*this) += str;
 }
 
-char* MyString::MyStringObj::operator[](size_t index) { return &data[index]; }
+char* MyString::MyStringObj::operator[](size_t index) {
+  if (index > stored)
+    throw std::out_of_range("Requested char* at index is out of range.");
+  return &data[index];
+}
 
 const char* MyString::MyStringObj::operator[](size_t index) const {
+  if (index > stored)
+    throw std::out_of_range("Requested char* at index is out of range.");
   return &data[index];
 }
 
@@ -163,29 +169,31 @@ MyString::MyString(const MyStringObj& o) {
 }
 
 MyString& MyString::operator=(const char* str) {
-  MyStringObj* tmp;
+  if (strcmp(str, this->str->getConstChar()) != 0) {
+    MyStringObj* tmp;
 
-  auto iter = StringCollection.find(str);
-  if (iter != StringCollection.end()) {
-    tmp = iter->second;
-    ++(iter->second->referred);
-  } else {
-    tmp = new MyStringObj(str);
-    StringCollection.insert(std::map<const char*, MyStringObj*>::value_type(
-        tmp->getConstChar(), tmp));
+    auto iter = StringCollection.find(str);
+    if (iter != StringCollection.end()) {
+      tmp = iter->second;
+      ++(iter->second->referred);
+    } else {
+      tmp = new MyStringObj(str);
+      StringCollection.insert(std::map<const char*, MyStringObj*>::value_type(
+          tmp->getConstChar(), tmp));
+    }
+
+    if (this->str->referred == 1) {
+      StringCollection.erase(StringCollection.find(this->str->getConstChar()));
+    } else
+      --(this->str->referred);
+
+    this->str = tmp;
   }
-
-  if (this->str->referred == 1) {
-    StringCollection.erase(StringCollection.find(this->str->getConstChar()));
-  } else
-    --(this->str->referred);
-
-  this->str = tmp;
   return *this;
 }
 
 MyString& MyString::operator=(const MyString& o) {
-  if (this != &o) {
+  if (this != &o && str != o.str) {
     if (this->str->referred == 1) {
       StringCollection.erase(StringCollection.find(this->str->getConstChar()));
     } else
@@ -199,15 +207,22 @@ MyString& MyString::operator=(const MyString& o) {
 
 MyString& MyString::operator=(const MyStringObj& o) {
   if (strcmp(str->getConstChar(), o.getConstChar()) != 0) {
+    MyStringObj* tmp;
     auto iter = StringCollection.find(o.getConstChar());
     if (iter != StringCollection.end()) {
-      str = iter->second;
+      tmp = iter->second;
       ++(iter->second->referred);
     } else {
-      str = new MyStringObj(o);
+      tmp = new MyStringObj(o);
       StringCollection.insert(std::map<const char*, MyStringObj*>::value_type(
-          str->getConstChar(), str));
+          tmp->getConstChar(), tmp));
     }
+    if (this->str->referred == 1) {
+      StringCollection.erase(StringCollection.find(this->str->getConstChar()));
+    } else
+      --(this->str->referred);
+
+    this->str = tmp;
   }
   return *this;
 }
@@ -216,10 +231,36 @@ MyString MyString::operator+(const char* str) {
   return MyString(*(this->str) + str);
 }
 MyString& MyString::operator+=(const char* str) {
-  // todo
-  return MyString(*(this->str) + str);
+  *this = *(this->str) + str;
+  return *this;
 }
+
+MyString MyString::operator+(const MyString& o) {
+  return MyString(*(this->str) + *(o.str));
+}
+MyString& MyString::operator+=(const MyString& o) {
+  *this = *(this->str) + *(o.str);
+  return *this;
+}
+
+MyString::MyStringChar MyString::operator[](size_t index) {
+  return MyString::MyStringChar(this, index);
+}
+const MyString::constMyStringChar MyString::operator[](size_t index) const {
+  return MyString::constMyStringChar(this, index);
+}
+
+inline void MyString::write(std::ostream& os) const { str->write(os); }
+inline void MyString::read(std::istream& is) {
+  // todo
+  str->read(is);
+}
+
 std::ostream& operator<<(std::ostream& os, const MyString& str) {
-  str.str->write(os);
+  str.write(os);
   return os;
+}
+std::istream& operator<<(std::istream& is, MyString& str) {
+  str.read(is);
+  return is;
 }

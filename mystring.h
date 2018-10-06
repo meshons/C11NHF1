@@ -1,10 +1,11 @@
 #ifndef MYSTRING_H
 #define MYSTRING_H 1
 
-#include <cctype>
-#include <cstring>
-#include <iostream>
-#include <map>
+#include <cctype>     // isspace()
+#include <cstring>    // strcmp, strlen ...
+#include <iostream>   // std::cout, std::cin
+#include <map>        // StringCollection
+#include <stdexcept>  // std::out_of_range
 
 class MyString {
  public:
@@ -42,10 +43,26 @@ class MyString {
     }
   };
 
- public:
+ private:
   static std::map<const char*, MyStringObj*, cStringLess> StringCollection;
 
  public:
+  class constMyStringChar {
+    const MyString* owner;
+    size_t pointed;
+
+   public:
+    constMyStringChar(const MyString* ptr, size_t pointed)
+        : owner{ptr}, pointed{pointed} {}
+    constMyStringChar(const constMyStringChar& o)
+        : owner{o.owner}, pointed{o.pointed} {}
+    constMyStringChar(const MyStringChar& o)
+        : owner{o.getOwner()}, pointed{o.getIndex()} {}
+    operator char() const { return owner->getValue(pointed); }
+    const char* operator&() const { return (*(owner->str))[pointed]; };
+    const MyString* getOwner() const { return owner; }
+    size_t getIndex() const { return pointed; }
+  };
   class MyStringChar {
     MyString* owner;
     size_t pointed;
@@ -54,14 +71,25 @@ class MyString {
     MyStringChar(MyString* ptr, size_t pointed)
         : owner{ptr}, pointed{pointed} {}
     MyStringChar(const MyStringChar& o) : owner{o.owner}, pointed{o.pointed} {}
-    operator char() { return owner->getValue(pointed); }
-    MyStringChar& operator=(char);
-    MyStringChar& operator=(const MyStringChar&);
+    explicit MyStringChar(const constMyStringChar& o) : pointed{o.getIndex()} {
+      owner = const_cast<MyString*>(o.getOwner());
+    }
+    operator char() const { return owner->getValue(pointed); }
+    MyStringChar& operator=(char);  // todo
+    MyStringChar& operator=(const MyStringChar& o) = default;
+    MyStringChar& operator=(const constMyStringChar& o) {
+      owner = const_cast<MyString*>(o.getOwner());
+      pointed = o.getIndex();
+      return *this;
+    }
+    const char* operator&() const { return (*(owner->str))[pointed]; };
+    MyString* getOwner() const { return owner; }
+    size_t getIndex() const { return pointed; }
   };
 
  private:
   MyStringObj* str;
-  char getValue(size_t index) { return *(*str)[index]; }
+  inline char getValue(size_t index) const { return *(*str)[index]; }
 
  public:
   MyString();
@@ -80,10 +108,10 @@ class MyString {
   MyString operator+(const MyString&);
   MyString& operator+=(const MyString&);
   MyStringChar operator[](size_t);
-  const MyStringChar operator[](size_t) const;
+  const constMyStringChar operator[](size_t) const;
   size_t size() const { return str->size(); }
-  friend std::ostream& operator<<(std::ostream&, const MyString&);
-  friend std::istream& operator>>(std::istream&, MyString&);  // todo
+  void write(std::ostream&) const;
+  void read(std::istream&);  // todo
 };
 
 std::ostream& operator<<(std::ostream&, const MyString&);
