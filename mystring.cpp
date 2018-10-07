@@ -115,7 +115,6 @@ std::ostream& MyString::MyStringObj::write(std::ostream& os) const {
 std::istream& MyString::MyStringObj::read(std::istream& is) {
   *this = MyStringObj();
   int x = is.get();
-  bool started = false;
   while (isspace(x) && x != EOF) x = is.get();
   while (!isspace(x) && x != EOF) {
     *this += static_cast<char>(x);
