@@ -103,39 +103,41 @@ int main() {
               << "s3[7]: " << s3[7] << std::endl
               << "---" << std::endl;
     MyString::listCollection(std::cout);
-    s1[13] = s3[7];
-    std::cout << "--- s1[13]=s3[7]" << std::endl
+    s1[10] = s3[7];
+    std::cout << "--- s1[10]=s3[7]" << std::endl
               << "s1: " << s1 << std::endl
               << "---" << std::endl;
     MyString::listCollection(std::cout);
-    MyString::MyStringChar c3(s1[13]);      // move const
+    MyString::MyStringChar c3(s1[10]);      // move const
     MyString::constMyStringChar c4(s3[3]);  // move const
     MyString::MyStringChar c1(c3);          // copy const
     MyString::constMyStringChar c5(c3);     // copy const
     MyString::constMyStringChar c2(c4);     // copy const
-    std::cout << "--- (normal) s1[13] copy ctr" << std::endl
+    std::cout << "--- (normal) s1[10] copy ctr" << std::endl
               << "c1: " << c1 << std::endl
               << "c1: " << &c1 << std::endl
               << "--- (const) s3[5] copy ctr" << std::endl
               << "c2: " << c2 << std::endl
               << "c2: " << &c2 << std::endl
               << "---" << std::endl;
+  }
+  {
+    MyString s1("valami");
+    MyString s2, s4;
+    MyString s3("val");
+    s3 = s3 + "ami";
+    s2 = "valami";
+    s1[4] = s1[3];
+    MyString s5("igen");
+    s5 = s5 + "i";
+    MyString s6("igen");
+    s6 = s6 + MyString("I");
+    s6 = MyString("hosszu a nagy coverage miatt");
+    s1 = "nagyon hosszu string hogy nagyobb legyen a coverage :D";
+    MyString::listCollection(std::cout);
     try {
-      MyString s1("valami");
-      MyString s2, s4;
-      MyString s3("val");
-      s3 = s3 + "ami";
-      s2 = "valami";
-      s1[4] = s1[3];
-      MyString s5("igen");
-      s5 = s5 + "i";
-      MyString s6("igen");
-      s6 = s6 + MyString("I");
-      s6 = MyString("hosszu a nagy coverage miatt");
-      s1 = "nagyon hosszu string hogy nagyobb legyen a coverage :D";
-      MyString::listCollection(std::cout);
       s1[1500] = 'C';
-    } catch (std::out_of_range& e) {
+    } catch (const std::out_of_range& e) {
       std::cout << "exception: " << e.what() << std::endl;
     }
   }

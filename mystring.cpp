@@ -6,6 +6,7 @@ std::map<const char*, MyString::MyStringObj*, MyString::cStringLess>
 inline MyString::MyStringObj::MyStringObj()
     : maxsize{10}, stored{0}, referred{1} {
   data = new char[maxsize];
+  data[0] = 0;
 }
 inline MyString::MyStringObj::MyStringObj(const char* str) : referred{1} {
   stored = strlen(str);
@@ -184,6 +185,7 @@ MyString& MyString::operator=(const char* str) {
 
     if (this->str->referred == 1) {
       StringCollection.erase(StringCollection.find(this->str->getConstChar()));
+      delete this->str;
     } else
       --(this->str->referred);
 
@@ -196,6 +198,7 @@ MyString& MyString::operator=(const MyString& o) {
   if (this != &o && str != o.str) {
     if (this->str->referred == 1) {
       StringCollection.erase(StringCollection.find(this->str->getConstChar()));
+      delete this->str;
     } else
       --(this->str->referred);
 
@@ -219,6 +222,7 @@ MyString& MyString::operator=(const MyStringObj& o) {
     }
     if (this->str->referred == 1) {
       StringCollection.erase(StringCollection.find(this->str->getConstChar()));
+      delete this->str;
     } else
       --(this->str->referred);
 
@@ -243,11 +247,10 @@ MyString& MyString::operator+=(const MyString& o) {
   return *this;
 }
 
-MyString::MyStringChar MyString::operator[](size_t index) noexcept {
+MyString::MyStringChar MyString::operator[](size_t index) {
   return MyString::MyStringChar(this, index);
 }
-const MyString::constMyStringChar MyString::operator[](size_t index) const
-    noexcept {
+const MyString::constMyStringChar MyString::operator[](size_t index) const {
   return MyString::constMyStringChar(this, index);
 }
 
